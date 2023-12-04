@@ -10,8 +10,8 @@
 
 ![image](https://github.com/TimurKisiev11/certification_automation/assets/113093142/6ec2a8e4-0f2f-4920-8e1c-9d69931fb971)
 #### 4. По каждому аттестуемому создается новая таблица с результатами тестирования, которая выглядит вот так:
+![image](https://github.com/TimurKisiev11/certification_automation/assets/113093142/3fe4f75c-6051-4e5a-9b60-f86478ae587f)
 
- <img src="https://github.com/TimurKisiev11/certification_automation/assets/113093142/3fe4f75c-6051-4e5a-9b60-f86478ae587f" alt="mypic" style="width:1000px; height:100px"/> <br>
 ## Как пользоваться скриптом **certification_script.py**?
 
 #### 1. Для начала нужно скачать скрипт, скачивать и запускать весь проект в IDE необязательно.
