@@ -6,8 +6,8 @@ import subprocess
 
 script_path = 'C:/Users/user/PycharmProjects/certification_automation/my_script.py'
 file_path_2 = 'C:/Users/user/PycharmProjects/certification_automation/Компетенции_по_шкале_DE.xlsx'
-directory_path = '/certification_results/'
-save_to = 'C:/Users/user/PycharmProjects/certification_automation'
+directory_path = 'C:/Users/user/PycharmProjects/certification_automation/certification_results'
+save_to = 'C:/Users/user/PycharmProjects/certification_automation/results'
 
 for filename in os.listdir(directory_path):
     if filename.endswith(".xlsx"):

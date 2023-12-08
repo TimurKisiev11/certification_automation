@@ -44,16 +44,16 @@ def convert_to_float(values_list):
                     float_value = float(value)
                     float_values_list.append(float_value)
                 except Exception as e:
-                    if value == "Запрашивает Даша Информацию от РО" or value == "":
+                    if value == "Запрашивает Даша Информацию от РО" or value == "":  # Если осталась фраза из шаблона или пустая ячейка (ожидаемые ошибки).
                         float_values_list.append(0.0)
                     else:
-                        print(f"Error ONE while converting to float: {e}")
+                        print(f"Error ONE while converting to float: {e}")  # Если значение нечисловое (тоже в ноль, но еще поругаемся).
                         float_values_list.append(0.0)
             else:
                 float_values_list.append(0.0)
         return list(map(lambda x: round(x, 1), float_values_list))
     except Exception as e:
-        print(f"Error TWO while converting to float: {e}")
+        print(f"Error TWO while converting to float: {e}")  # если на вход получил не список.
         return []
 
 
@@ -71,11 +71,11 @@ def compare(average_values, target_values, confidence_level):
     for (avr, tg) in zip(average_values, target_values):
         if tg <= avr:
             coincidences += 1
-    complience = coincidences / len(target_values)
-    if complience >= confidence_level:
-        return True, round(complience, 2)
+    compliance = coincidences / len(target_values)
+    if compliance >= confidence_level:
+        return True, round(compliance, 2)
     else:
-        return False, round(complience, 2)
+        return False, round(compliance, 2)
 
 
 def create_and_write_to_xlsx(name, test_result, save_to):
@@ -87,25 +87,23 @@ def create_and_write_to_xlsx(name, test_result, save_to):
     :param save_to: Путь к директории, в которую нужно сохранить результирующую таблицу.
     """
     try:
-        data = [
-            ["ФИО", "Роль", "Текущий уровень", "Подтвержденный уровень", "Соответствие \n подтвержденному уровню",
-             "Следующий уровень", "Соответствие \n следующему уровню"]
-        ]
-        level, complience = 0, 0
+        data = [["ФИО", "Роль", "Текущий уровень", "Подтвержденный уровень", "Соответствие подтвержденному уровню",
+                 "Следующий уровень", "Соответствие следующему уровню"]]
+        level, compliance = 0, 0
         false_levels = []
         for key, val in test_result.items():
-            if val[0]:
-                level = key
-                complience = val[1]
-            else:
+            if val[0]:  # Пока уровень достигнут переходим дальше.
+                level = key  # Запоминаем последний уровень с True.
+                compliance = val[1]
+            else:  # Как только попали на False, запоминаем следующий уровень (первый еще не достигнутый).
                 false_levels.append((key, val))
-        info = [name, "DATA_EN", level, level, complience]
+        info = [name, "DATA_EN", level, level, compliance]
         if false_levels:
             info.append(false_levels[0][0])
             info.append(false_levels[0][1][1])
-        else:
+        else:  # Если уровень 'Expert', то следующего нет.
             info.append('Нет следующего')
-            info.append(complience)
+            info.append(0.0)
         data.append(info)
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -137,29 +135,29 @@ def certificate(marks_file, marks_sheet, target_values_file, target_values_sheet
     :return: Получает словарь {"Уровень": (True/false, уровень соответствия уровню) далее вызывает метод create_and_write_to_xlsx
     """
     test_result = {}
-    name = (read_from_file(marks_file, marks_sheet, 2, 2, 4))
+    name = (read_from_file(marks_file, marks_sheet, 2, 2, 4))[0]
     print(name)
     self_esteem = convert_to_float(read_from_file(marks_file, marks_sheet, 11, 30, 9))
     lead_esteem = convert_to_float(read_from_file(marks_file, marks_sheet, 11, 30, 10))
     average = list(map(lambda x, y: round((x + y) / 2, 1), self_esteem, lead_esteem))
     if self_esteem and lead_esteem:
-        for i in range(3, 10):
+        for i in range(3, 10):  # Сравниваем список средних оценок с целевыми значениями по всем уровням.
             target_scores = convert_to_float(read_from_file(target_values_file, target_values_sheet, 2, 22, i))
             average_copy = average.copy()
-            if average[10] != 0:
+            if average[10] != 0:  # Если критерий 'NI-FI заполнен.
                 target_scores.pop(10)
             else:
                 target_scores.pop(11)
-            if average[8] != 0:
-                average_copy.pop(9)
+            if average[8] != 0:  # Если критерий 'Airflow' заполнен.
+                average_copy.pop(9)  # Убираем Oozie и из оценок, и из целевых значений.
                 target_scores.pop(9)
-            else:
+            else:  # Иначе убираем Airflow, смотрим на Oozie.
                 average_copy.pop(8)
                 target_scores.pop(8)
-            if average[3] != 0:
-                average_copy.pop(6)
+            if average[3] != 0:  # Если критерий 'Scala. Конструкции языка' заполнен.
+                average_copy.pop(6)  # Убираем Python и из оценок, и из целевых значений.
                 target_scores.pop(6)
-            else:
+            else:  # Иначе убираем все три критерия по Scala, смотрим на Python.
                 for i in reversed(range(3, 6)):
                     average_copy.pop(i)
                     target_scores.pop(i)
@@ -167,7 +165,8 @@ def certificate(marks_file, marks_sheet, target_values_file, target_values_sheet
             prof_level = (read_from_file(target_values_file, target_values_sheet, 1, 1, i))[0]
             test_result.update({prof_level: status})
     print(test_result)
-    create_and_write_to_xlsx(str(name).lstrip("['").rstrip("]'"), test_result, save_to)
+    create_and_write_to_xlsx(str(name), test_result, save_to)
+    return test_result
 
 
 if __name__ == "__main__":
@@ -180,4 +179,4 @@ if __name__ == "__main__":
         file_path_2 = sys.argv[2]
         sheet_name_2 = 'Целевые значения'
         save_to = sys.argv[3]
-        certificate(file_path, sheet_name, file_path_2, sheet_name_2, save_to)
+        res = certificate(file_path, sheet_name, file_path_2, sheet_name_2, save_to)

@@ -1,6 +1,6 @@
 import unittest
 from unittest import TestCase
-from certification_automation import read_from_file, convert_to_float, compare, certificate, create_and_write_to_xlsx
+from certification_script import read_from_file, convert_to_float, compare, certificate, create_and_write_to_xlsx
 import pytest
 
 
@@ -8,6 +8,7 @@ class Test(TestCase):
     """
     Тесты для certification_automation.py
     """
+
     @pytest.fixture(autouse=True)
     def _pass_fixtures(self, capsys):
         self.capsys = capsys
@@ -22,12 +23,12 @@ class Test(TestCase):
             captured.out)
 
     def test_convert_error(self):
-        result = convert_to_float(1)
+        result = convert_to_float(1)  # если на вход подан вообще не список
         captured = self.capsys.readouterr()
         self.assertEqual("Error TWO while converting to float: 'int' object is not iterable\n", captured.out)
 
     def test_convert_error_2(self):
-        result = convert_to_float("A")
+        result = convert_to_float("A")  # если на вход подано не числовое значение
         captured = self.capsys.readouterr()
         self.assertEqual("Error ONE while converting to float: could not convert string to float: 'A'\n", captured.out)
 
@@ -53,7 +54,7 @@ class Test(TestCase):
         self.assertEqual(result, [])
 
     def test_convert_to_float(self):
-        test_values = ['1.1', 4, 2.1, '', None]
+        test_values = ['1.1', 4, 2.1, '', None]  # еще раз тестируем на все возможные вариации ввода
         result = convert_to_float(test_values)
         self.assertEqual(result, [1.1, 4.0, 2.1, 0.0, 0.0])
 
@@ -71,15 +72,14 @@ class Test(TestCase):
         sheet_name = 'Оценка компетенций'
         file_path_2 = 'Компетенции_по_шкале_DE.xlsx'
         sheet_name_2 = 'Целевые значения'
-        certificate(file_path, sheet_name, file_path_2, sheet_name_2, False)
-        captured = self.capsys.readouterr()
-        self.assertEqual("{'Junior I': (False, 0.78), 'Junior II': (False, 0.78), 'Middle I': (False, "
-                         "0.72), 'Middle II': (False, 0.72), 'Senior I': (False, 0.67), 'Senior II ': "
-                         "(False, 0.28), 'Expert ': (False, 0.11)}\n", captured.out)
+        res = certificate(file_path, sheet_name, file_path_2, sheet_name_2, False)
+        self.assertEqual({'Junior I': (False, 0.78), 'Junior II': (False, 0.78), 'Middle I': (False, 0.72),
+                          'Middle II': (False, 0.72), 'Senior I': (False, 0.67), 'Senior II ': (False, 0.28), 'Expert ': (False, 0.11)}, res)
 
     def test_create_and_write_to_xlsx(self):
         save_to = 'C:/Users/user/PycharmProjects/certification_automation'
-        res = {'Junior I': (True, 1.0), 'Junior II': (True, 0.94), 'Middle I': (True, 0.89), 'Middle II': (True, 0.83), 'Senior I': (True, 0.83), 'Senior II ': (False, 0.78), 'Expert ': (False, 0.78)}
+        res = {'Junior I': (True, 1.0), 'Junior II': (True, 0.94), 'Middle I': (True, 0.89), 'Middle II': (True, 0.83),
+               'Senior I': (True, 0.83), 'Senior II ': (False, 0.78), 'Expert ': (False, 0.78)}
         create_and_write_to_xlsx("Меня нет я тест", res, save_to)
         captured = self.capsys.readouterr()
         self.assertEqual('Файл '"'C:/Users/user/PycharmProjects/certification_automation/certificate_Меня нет "
